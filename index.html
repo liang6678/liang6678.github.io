@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>shopshop buy - 跨境选品专家只为提供廉价的购物选择 | 焕新购物界面</title>
+    <!-- 第三方库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&family=Noto+Sans+SC:wght@300;500;900&display=swap" rel="stylesheet">
+    <style>
+        /* ----- 原有核心样式 (完全保留，未删减) ----- */
+        :root {
+            --ms-blue: #0067b8;
+            --amz-bg: #0f1111;
+            --amz-card: #1d252d;
+            --amz-orange: #ffd814;
+        }
+        body { background-color: var(--amz-bg); color: #ffffff; font-family: "Segoe UI", Arial, sans-serif; scroll-behavior: smooth; overflow-x: hidden; margin: 0; padding: 0;}
+
+        #login-overlay {
+            position: fixed; inset: 0; 
+            background: transparent;
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(2px);
+        }
+        .ms-card { 
+            background: rgba(255, 255, 255, 0.97); 
+            padding: 44px; width: 440px; border-radius: 24px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4); color: #1b1b1b; 
+            backdrop-filter: blur(4px);
+            z-index: 20;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .ms-logo { width: 108px; margin-bottom: 24px; }
+        .ms-input { width: 100%; border: none; border-bottom: 1px solid #666; background: transparent; padding: 10px 0; margin-top: 10px; outline: none; font-size: 16px; }
+        .ms-btn { background: var(--ms-blue); color: white; padding: 8px 38px; float: right; margin-top: 40px; cursor: pointer; border: none; border-radius: 4px; font-weight: 600; transition: 0.2s; }
+        .ms-btn:hover { background: #0050a0; }
+
+        .hero-page {
+            height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: url('https://www.saibeiip.com/proxyfile/article/2019/1/3002/8312411677806590-970.jpg') no-repeat center center;
+            background-size: cover; position: relative;
+        }
+        .glass-overlay {
+            position: absolute; inset: 0; background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 1;
+        }
+        .search-container { width: 66.6%; position: relative; z-index: 10; }
+        .search-bar {
+            width: 100%; height: 75px; display: flex; background: white; border-radius: 18px; 
+            overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+        .search-bar input { flex: 1; padding: 0 35px; color: #000; outline: none; font-size: 22px; }
+        .search-bar button { background: var(--amz-orange); padding: 0 45px; color: #111; font-size: 32px; cursor: pointer; }
+
+        /* 宣传片背景样式 (完全保留) */
+        #promo-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #promo-bg * { pointer-events: none; }
+        #promo-bg #viewport {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #f8f9ff 0%, #ffffff 100%);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+        #promo-bg .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            z-index: 2;
+        }
+        #promo-bg .phone-frame {
+            width: 280px;
+            height: 580px;
+            border: 8px solid #1d1d1f;
+            border-radius: 40px;
+            background: white;
+            position: relative;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        #promo-bg .phone-screen { padding: 20px; height: 100%; display: flex; flex-direction: column; }
+        #promo-bg .product-card {
+            width: 100%; height: 140px; background: #f5f5f7; border-radius: 18px;
+            margin-bottom: 15px; padding: 15px; position: relative;
+        }
+        #promo-bg .price-tag { background: #6366f1; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; display: inline-block; }
+        #promo-bg .chat-bubble { max-width: 80%; padding: 10px 15px; border-radius: 18px; margin-bottom: 10px; font-size: 13px; line-height: 1.4; }
+        #promo-bg .bubble-left { background: #e9e9eb; align-self: flex-start; border-bottom-left-radius: 4px; }
+        #promo-bg .bubble-right { background: #6366f1; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        #promo-bg .floating-icon { position: absolute; padding: 15px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); font-size: 24px; z-index: 20; }
+        #promo-bg .caption-area, #promo-bg #scene-end div:last-child, #promo-bg .caption-area * { display: none !important; }
+        #promo-bg #scene-end .cursor-pointer { display: none; }
+        #promo-bg .orb { position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(80px); z-index: 0; opacity: 0.3; }
+
+        /* ========= 新增：现代化购物卡片样式 (模仿拼购优选风格) ========= */
+        .product-card-modern {
+            background: #ffffff;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .product-card-modern:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 28px -12px rgba(0,0,0,0.2);
+        }
+        .card-img-wrapper {
+            position: relative;
+            padding-bottom: 100%;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+        .card-img-wrapper .placeholder-box {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f2f5 0%, #e6e9ef 100%);
+            font-size: 3rem;
+            color: #6366f1;
+            opacity: 0.8;
+        }
+        .card-badge {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: #f59e0b;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .discount-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            z-index: 2;
+        }
+        .product-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #1e293b;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            transition: color 0.2s;
+        }
+        .product-name:hover {
+            color: #f59e0b;
+        }
+        .price-current {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #f59e0b;
+            line-height: 1.2;
+        }
+        .price-original {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-decoration: line-through;
+            margin-left: 0.5rem;
+        }
+        .shipping-info {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.7rem;
+            color: #f59e0b;
+            background: #fef3c7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 30px;
+            width: fit-content;
+        }
+        .rating-stars {
+            display: flex;
+            align-items: center;
+            gap: 0.125rem;
+            font-size: 0.65rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .btn-fav {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-fav:hover {
+            border-color: #f97316;
+            color: #f97316;
+            background: #fff7ed;
+        }
+        .btn-cart {
+            flex: 1;
+            background: #f59e0b;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.5rem 0;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-cart:hover {
+            background: #d97706;
+        }
+        .btn-more {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .btn-more:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 640px) {
+            .ms-card { width: 90%; padding: 32px 24px; }
+            .search-container { width: 90%; }
+            .search-bar { height: 56px; border-radius: 40px; }
+            .search-bar input { font-size: 16px; padding: 0 20px; }
+            .search-bar button { padding: 0 24px; font-size: 24px; }
+            #product-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px;
+                padding: 0 12px;
+            }
+            .product-card-modern { margin: 0; }
+            .price-current { font-size: 1.1rem; }
+            .btn-cart { font-size: 0.7rem; padding: 0.4rem 0; }
+            .btn-fav, .btn-more { width: 1.8rem; height: 1.8rem; }
+            /* 新增按钮在移动端缩小间距 */
+            .header-buttons { gap: 0.5rem; margin-left: 0.5rem; }
+            .header-buttons a { padding: 0.3rem 0.6rem; font-size: 0.65rem; }
+        }
+        @media (max-width: 480px) {
+            #product-grid { grid-template-columns: repeat(1, 1fr) !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 登录界面（宣传片背景完全保留） -->
+<div id="login-overlay">
+    <div id="promo-bg">
+        <div id="viewport">
+            <div class="orb" style="background: #a5b4fc; top: -10%; right: -10%;"></div>
+            <div class="orb" style="background: #fbcfe8; bottom: -10%; left: -10%;"></div>
+            <div class="scene" id="scene-intro">
+                <div id="logo-container" style="text-align: center;">
+                    <div style="width: 80px; height: 80px; background: #6366f1; border-radius: 22px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: 800;">S</div>
+                    <h1 style="font-size: 48px; letter-spacing: -1px; color:#1d1d1f;">Shop Shop Buy</h1>
+                </div>
+            </div>
+            <div class="scene" id="scene-fast">
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div style="height: 20px; width: 40%; background: #eee; border-radius: 10px; margin-bottom: 20px;"></div>
+                        <div class="product-card" id="card-1">
+                            <div style="width: 50px; height: 50px; background: #ddd; border-radius: 10px; margin-bottom: 10px;"></div>
+                            <div class="price-tag" id="price-1">$ 99.00</div>
+                        </div>
+                        <div class="product-card" id="card-2">
+                            <div style="width: 50px; height: 50px; background: #ddd; border-radius: 10px; margin-bottom: 10px;"></div>
+                            <div class="price-tag" id="price-2">$ 149.00</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="floating-icon" id="tag-low" style="top: 25%; right: 20%;">📉 低价</div>
+                <div class="floating-icon" id="tag-fast" style="bottom: 30%; left: 20%;">⚡ 极速</div>
+            </div>
+            <div class="scene" id="scene-comm">
+                <div class="phone-frame">
+                    <div class="phone-screen" style="justify-content: flex-end;">
+                        <div class="chat-bubble bubble-left">How much is shipping to NY?</div>
+                        <div class="chat-bubble bubble-right">正在为您翻译：纽约运费仅需 $5</div>
+                        <div class="chat-bubble bubble-left">That's amazing! I'll take it.</div>
+                    </div>
+                </div>
+                <div class="floating-icon" style="top: 20%; left: 15%;">🌍</div>
+                <div class="floating-icon" style="top: 40%; right: 15%;">✨</div>
+            </div>
+            <div class="scene" id="scene-community">
+                <div style="display: flex; gap: 20px;">
+                    <div class="product-card" style="width: 200px; height: 260px; background: white; box-shadow: 0 20px 40px rgba(0,0,0,0.05);">
+                        <div style="width: 100%; height: 120px; background: #f0f0f0; border-radius: 12px; margin-bottom: 15px;"></div>
+                        <div style="height: 10px; width: 80%; background: #eee; margin-bottom: 8px;"></div>
+                        <div style="height: 10px; width: 50%; background: #eee; margin-bottom: 15px;"></div>
+                        <div style="display: flex; gap: -5px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: #ccc; border: 2px solid white;"></div>
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: #bbb; border: 2px solid white;"></div>
+                            <div style="margin-left: 10px; font-size: 12px; color: #86868b;">+1.2k 讨论</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="scene" id="scene-end">
+                <h1 style="font-size: 64px; font-weight: 800; margin-bottom: 20px; color:#1d1d1f;">Shop Shop Buy</h1>
+                <div style="padding: 15px 40px; background: #6366f1; color: white; border-radius: 30px; font-weight: 600; font-size: 20px; visibility: hidden; display: none;">立即开启全球购</div>
+            </div>
+            <div class="caption-area">
+                <div class="cn-text" id="cap-cn">连接全球，触手可及</div>
+                <div class="en-text" id="cap-en">GLOBAL SHOPPING, WITHIN REACH</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录卡片 -->
+    <div class="ms-card">
+        <img src="https://logincdn.msauth.net/shared/1.0/content/images/microsoft_logo_ee5c8d9bfed103d6a5e06587b00c54f8.svg" class="ms-logo" alt="logo">
+        <h2 class="text-2xl font-semibold">登录</h2>
+        <input type="text" id="email" class="ms-input" placeholder="电子邮件、电话或 Skype">
+        <input type="password" id="password" class="ms-input" placeholder="密码">
+        <label class="flex items-center mt-6 text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" id="is-china-user" class="mr-2 w-4 h-4"> 我是中国用户
+        </label>
+        <button onclick="doLogin()" class="ms-btn">下一步</button>
+    </div>
+</div>
+
+<!-- ========= 修改后的 header：左上角增加三个新功能按钮，其余不变 ========= -->
+<header class="fixed top-0 w-full bg-[#131921]/90 backdrop-blur-md px-8 py-4 flex items-center justify-between z-50 border-b border-white/5">
+    <!-- 左侧区域：标题 + 新按钮组 -->
+    <div class="flex items-center gap-3 flex-wrap">
+        <h1 class="text-2xl font-black text-amber-400 italic cursor-pointer" onclick="window.scrollTo(0,0)">GLOBAL PDD</h1>
+        <!-- 新增三个按钮 -->
+        <div class="flex items-center gap-2 header-buttons">
+            <a href="https://www.douyin.com/" target="_blank" rel="noopener noreferrer" 
+               class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1 backdrop-blur-sm">
+                <i class="ri-tiktok-line text-amber-400"></i> ChinaTikTok
+            </a>
+            <a href="https://www.goofish.com/" target="_blank" rel="noopener noreferrer" 
+               class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1 backdrop-blur-sm">
+                <i class="ri-shopping-bag-line text-green-400"></i> Chinese second-hand platform
+            </a>
+            <a href="https://www.bilibili.com/" target="_blank" rel="noopener noreferrer" 
+               class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1 backdrop-blur-sm">
+                <i class="ri-youtube-line text-red-400"></i> China Youtube
+            </a>
+            <a href="https://chat.deepseek.com/ " target="_blank" rel="noopener noreferrer" 
+               class="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-full transition-all duration-200 flex items-center gap-1 backdrop-blur-sm">
+                <i class="deepseek text-red-400"></i> deepseek(the best AI in China)
+            </a>
+        </div>
+    </div>
+    <!-- 右侧：语言/区域选择器（完全保留） -->
+    <div class="flex items-center gap-4">
+        <select id="lang-selector" class="bg-[#232f3e] text-white text-xs p-2 rounded outline-none border border-gray-700">
+            <option value="zh">中文</option><option value="en">English</option>
+            <option value="ja">日本語</option><option value="ko">한국어</option>
+            <option value="fr">Français</option>
+        </select>
+        <select id="region-selector" class="bg-[#232f3e] text-green-400 text-xs p-2 rounded outline-none border border-gray-700" onchange="resetAndSearch()">
+            <option value="US">美国 ($)</option><option value="UK">英国 (£)</option>
+            <option value="JP">日本 (¥)</option><option value="KR">韩国 (₩)</option>
+            <option value="EU">欧盟 (€)</option><option value="HK">香港 (HK$)</option>
+        </select>
+    </div>
+</header>
+
+<!-- 搜索区域（完全保留） -->
+<section class="hero-page">
+    <div class="glass-overlay"></div>
+    <div class="search-container">
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="输入关键词，连接全球底价货源...">
+            <button onclick="handleSearch()"><i class="ri-search-line"></i></button>
+        </div>
+        <p id="status-text" class="text-center mt-4 text-amber-400 font-bold hidden">AI 智能检索中...</p >
+    </div>
+</section>
+
+<!-- 商品网格容器 -->
+<main id="results" class="px-8 py-24 max-w-[1800px] mx-auto min-h-screen">
+    <div id="product-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+</main>
+
+<script>
+    // ========= 原有核心业务逻辑 (完全保留，未改动) =========
+    const REGION_DATA = {
+        US: { r: 0.14, s: '$', ship: 15.0 }, UK: { r: 0.11, s: '£', ship: 12.0 },
+        JP: { r: 20.5, s: '¥', ship: 1200 }, KR: { r: 185, s: '₩', ship: 15000 },
+        EU: { r: 0.13, s: '€', ship: 14.0 }, HK: { r: 1.1, s: 'HK$', ship: 30.0 }
+    };
+
+    const prefixes = ["旗舰版", "高配", "极简", "智能", "便携式", "大容量", "复古", "专业级", "Hifi", "全自动"];
+    const products = ["蓝牙耳机", "智能手表", "加湿器", "咖啡机", "运动相机", "无人机", "扫地机器人", "游戏键盘", "自慰高潮", "空气炸锅", "猫砂盆", "投影仪", "冲锋衣", "精华液", "卷发棒", "智能门锁", "显示器支架", "瑜伽垫", "充电宝", "筋膜枪"];
+    const suffixes = ["黑色", "礼盒装", "卧室专用", "自营选品", "爆款直供", "学生党推荐", "4K超清", "出口原单", "静音版", "防渗透"];
+
+    function generateRealProductName() {
+        const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+        const n = products[Math.floor(Math.random() * products.length)];
+        const s = suffixes[Math.floor(Math.random() * suffixes.length)];
+        return `${p} ${n} (${s})`;
+    }
+
+    let isChinaUser = false;
+    let currentKeyword = "";
+    let isBusy = false;
+
+    function doLogin() {
+        const emailInput = document.getElementById('email');
+        if(!emailInput || !emailInput.value) {
+            alert("请输入有效的邮箱或电话");
+            return;
+        }
+        isChinaUser = document.getElementById('is-china-user').checked;
+        document.getElementById('login-overlay').style.display = 'none';
+        window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+    }
+
+    async function handleSearch() {
+        const query = document.getElementById('search-input').value;
+        if(!query) return;
+        document.getElementById('status-text').classList.remove('hidden');
+        
+        const hasChinese = /[\u4e00-\u9fa5]/.test(query);
+        if (hasChinese) {
+            currentKeyword = query;
+        } else {
+            try {
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=auto|zh-CN`);
+                const data = await res.json();
+                currentKeyword = data.responseData.translatedText || query;
+            } catch(e) { currentKeyword = query; }
+        }
+
+        document.getElementById('status-text').classList.add('hidden');
+        window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+        resetAndSearch();
+    }
+
+    function getRandomOriginalPrice(price) {
+        let multiplier = 1.4 + Math.random() * 0.8;
+        return (price * multiplier).toFixed(2);
+    }
+
+    function getRandomBadge() {
+        const badges = ["热卖", "爆款", "特惠", "精选", "推荐"];
+        return badges[Math.floor(Math.random() * badges.length)];
+    }
+
+    function getRandomDiscount() {
+        const discounts = ["-57%", "-59%", "-54%", "-55%", "-56%", "-60%", "-65%"];
+        return discounts[Math.floor(Math.random() * discounts.length)];
+    }
+
+    function getRandomRating() {
+        let rating = (3.8 + Math.random() * 1.2).toFixed(1);
+        return rating;
+    }
+
+    function getRandomSold() {
+        const counts = ["12,853", "45,632", "29,384", "18,920", "87,654", "63,210", "34,567", "21,890", "55,432", "18,756"];
+        return counts[Math.floor(Math.random() * counts.length)];
+    }
+
+    function render(num = 10) {
+        if(isBusy) return;
+        isBusy = true;
+        const grid = document.getElementById('product-grid');
+        const reg = document.getElementById('region-selector').value;
+        const data = REGION_DATA[reg] || REGION_DATA.US;
+
+        for(let i=0; i<num; i++) {
+            const displayWord = currentKeyword || generateRealProductName();
+            const priceRaw = (Math.random() * 150 + 40);
+            const price = (priceRaw * data.r).toFixed(2);
+            const originalPriceRaw = priceRaw * (1.4 + Math.random() * 0.8);
+            const originalPrice = (originalPriceRaw * data.r).toFixed(2);
+            const estShip = (data.ship * (0.8 + Math.random() * 0.4)).toFixed(2);
+            
+            const badgeText = getRandomBadge();
+            const discountText = getRandomDiscount();
+            const rating = getRandomRating();
+            const soldCount = getRandomSold();
+            
+            const card = document.createElement('div');
+            card.className = 'product-card-modern';
+            card.innerHTML = `
+                <div class="card-img-wrapper">
+                    <div class="placeholder-box">
+                        <i class="ri-shopping-bag-3-line"></i>
+                    </div>
+                    <span class="card-badge">${badgeText}</span>
+                    <span class="discount-badge">${discountText}</span>
+                </div>
+                <div class="p-3 flex-1 flex flex-col">
+                    <button class="product-name text-left cursor-pointer" onclick="goToPdd('${displayWord.replace(/'/g, "\\'")}')">${displayWord}</button>
+                    <div class="mt-2 flex items-baseline flex-wrap gap-1">
+                        <span class="price-current">${data.s}${price}</span>
+                        <span class="price-original">${data.s}${originalPrice}</span>
+                    </div>
+                    <div class="mt-1 flex items-center justify-between">
+                        <div class="shipping-info">
+                            <i class="ri-truck-line text-xs"></i>
+                            <span>运费: ${data.s}${estShip}</span>
+                        </div>
+                        <div class="rating-stars">
+                            <i class="ri-star-fill text-amber-400 text-xs"></i>
+                            <span class="text-gray-600 text-xs ml-0.5 font-medium">${rating}</span>
+                            <span class="text-gray-400 text-xs ml-1">已售 ${soldCount}</span>
+                        </div>
+                    </div>
+                    <div class="action-buttons mt-3">
+                        <button class="btn-fav" onclick="toggleFavorite(this)" title="收藏">
+                            <i class="ri-heart-line"></i>
+                        </button>
+                        <button class="btn-cart" onclick="goToPdd('${displayWord.replace(/'/g, "\\'")}')">
+                            <i class="ri-shopping-cart-line text-sm"></i> 立即购买
+                        </button>
+                        <button class="btn-more" onclick="alert('更多选项\n商品：${displayWord}')" title="更多">
+                            <i class="ri-more-2-line"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+            setTimeout(() => card.style.opacity = '1', i * 40);
+            card.style.opacity = '0';
+            card.style.transition = 'opacity 0.3s ease';
+        }
+        isBusy = false;
+    }
+
+    function toggleFavorite(btn) {
+        const icon = btn.querySelector('i');
+        if(icon.classList.contains('ri-heart-line')) {
+            icon.classList.remove('ri-heart-line');
+            icon.classList.add('ri-heart-fill');
+            icon.style.color = '#ef4444';
+            btn.style.transform = 'scale(1.1)';
+            setTimeout(() => btn.style.transform = '', 200);
+        } else {
+            icon.classList.remove('ri-heart-fill');
+            icon.classList.add('ri-heart-line');
+            icon.style.color = '';
+        }
+    }
+
+    function goToPdd(word) {
+        if(isChinaUser) { alert("当前地区不可用"); return; }
+        window.open(`https://mobile.yangkeduo.com/search_result.html?search_key=${encodeURIComponent(word)}`, '_blank');
+    }
+
+    function resetAndSearch() {
+        const grid = document.getElementById('product-grid');
+        if(grid) grid.innerHTML = '';
+        render(15);
+    }
+
+    window.onscroll = () => {
+        const bottom = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+        if (window.scrollY > 300 && bottom < 600) { render(10); }
+    };
+
+    function initPromoAnimation() {
+        if(typeof gsap === 'undefined') return;
+        gsap.registerPlugin(TextPlugin);
+        const tl = gsap.timeline({ repeat: -1, repeatDelay: 0 });
+        gsap.set("#promo-bg .scene", { autoAlpha: 0, y: 30 });
+        tl.to("#promo-bg #scene-intro", { duration: 1.2, autoAlpha: 1, y: 0, ease: "expo.out" })
+          .to("#promo-bg #scene-intro", { duration: 0.8, autoAlpha: 0, y: -30, ease: "expo.in" }, "+=1.5")
+          .to("#promo-bg #scene-fast", { duration: 1, autoAlpha: 1, y: 0, ease: "power4.out" })
+          .from("#promo-bg #card-1", { x: -100, opacity: 0, duration: 0.6, ease: "back.out(1.7)" }, "-=0.2")
+          .from("#promo-bg #card-2", { x: 100, opacity: 0, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4")
+          .to("#promo-bg #price-1", { text: "$ 19.90", duration: 1, ease: "power2.inOut" }, "+=0.2")
+          .to("#promo-bg #price-2", { text: "$ 24.50", duration: 1, ease: "power2.inOut" }, "-=1")
+          .from("#promo-bg .floating-icon", { scale: 0, stagger: 0.2, ease: "back.out" }, "-=0.5")
+          .to("#promo-bg #scene-fast", { duration: 0.8, autoAlpha: 0, scale: 0.9, ease: "expo.in" }, "+=2")
+          .to("#promo-bg #scene-comm", { duration: 1, autoAlpha: 1, y: 0, ease: "power4.out" })
+          .from("#promo-bg .chat-bubble", { y: 20, opacity: 0, stagger: 0.5, duration: 0.8, ease: "power2.out" })
+          .to("#promo-bg #scene-comm", { duration: 0.8, autoAlpha: 0, x: 100, ease: "expo.in" }, "+=2.5")
+          .to("#promo-bg #scene-community", { duration: 1, autoAlpha: 1, y: 0, ease: "back.out(1.2)" })
+          .to("#promo-bg #scene-community", { duration: 0.8, autoAlpha: 0, y: -50, ease: "expo.in" }, "+=2")
+          .to("#promo-bg #scene-end", { duration: 1.2, autoAlpha: 1, y: 0, ease: "expo.out" })
+          .from("#promo-bg #scene-end h1", { scale: 0.8, duration: 1, ease: "power4.out" }, "-=1")
+          .to("#promo-bg #scene-end", { duration: 1, autoAlpha: 0, ease: "power2.in" }, "+=3");
+    }
+
+    function detectMobileDevice() {
+        const ua = navigator.userAgent;
+        let deviceType = 'desktop';
+        if (/iPhone|iPad|iPod/i.test(ua)) deviceType = 'ios';
+        else if (/Android/i.test(ua)) deviceType = 'android';
+        document.body.classList.add(`device-${deviceType}`);
+        if (/iPhone|iPad|iPod|Android/i.test(ua) || window.innerWidth <= 768) {
+            document.body.classList.add('is-mobile');
+        }
+    }
+    detectMobileDevice();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initPromoAnimation();
+        const originalLogin = doLogin;
+        window.doLogin = function() {
+            originalLogin();
+            if(document.getElementById('product-grid')) resetAndSearch();
+        };
+    });
+</script>
+</body>
+</html>
